@@ -17,9 +17,6 @@ class Parser:
             raise SyntaxError(f"Syntaktická chyba: očakávaný token {expected_token_type}, " 
                              f"získaný {self.current_token.type}")
     
-    # def Regular(self):
-    #     expr = self.Alternative()
-    #     return("regular", expr)
 
     def Alternative(self):
         left = self.Sequence()  
@@ -37,6 +34,7 @@ class Parser:
             return nodes[0]
         else:
             return left
+        
     
     def Sequence(self):
         nodes = []
@@ -75,6 +73,22 @@ class Parser:
             raise SyntaxError(f"Neočakávaný token: {token}")
         
 def visualize_tree(parsed_tree):
+    def has_pipe(node, depth=0):
+        indent = "  " * depth
+        if isinstance(node, tuple):
+            if node[0] == "alternative":
+                return True
+            for child in node[1:]:
+                if has_pipe(child, depth + 1):
+                    return True
+        elif isinstance(node, list):
+            for child in node:
+                if has_pipe(child, depth + 1):
+                    return True
+        return False
+
+    
+     
     def build_tree(node, parent=None):
         if isinstance(node, tuple):
             label = node[0]
@@ -108,7 +122,11 @@ def visualize_tree(parsed_tree):
             Node(str(node), parent=parent)
 
     root = Node("regular")
-    build_tree(parsed_tree, root)
+    if has_pipe(parsed_tree):
+        alt_node = Node("alternative", parent=root)
+        build_tree(parsed_tree, parent=alt_node)
+    else:
+        build_tree(parsed_tree, parent=root)
 
     print("\n📌 Дерево вывода:")
     for pre, _, node in RenderTree(root):
