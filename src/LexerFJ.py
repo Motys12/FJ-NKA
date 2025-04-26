@@ -3,11 +3,6 @@ from enum import Enum, auto
 class TokenType(Enum):
     SYMBOL = auto()    
     
-    # SEQUENCE = auto()    # R1R2
-    # ALTERNATIVE = auto() # R1|R2
-    # TRANSITIVE = auto()  # {R} 
-    # POSITIVE = auto()    # R{R}
-    # OPTIONAL = auto()    # [R]
     PIPE = auto()        # '|'
     LBRACKET = auto()    # '['
     RBRACKET = auto()    # ']'
