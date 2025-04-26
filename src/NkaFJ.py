@@ -52,9 +52,11 @@ class NKA:
             next_states = []
             for state in current_states:
                 if string[pos] in state.transitions:
-                    next_states.update(state.transitions[string[pos]])
+                    next_states.extend(state.transitions[string[pos]])
                     print(f"Transition on '{string[pos]}': {state} -> {state.transitions[string[pos]]}")
-               
+                else:
+                    print(f"No valid transition for '{string[pos]}' at state: {state}")
+
             if not next_states:
                 print("No states to process for next character!")
                 return False  # Dead end, not accepted
