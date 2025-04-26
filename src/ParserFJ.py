@@ -7,10 +7,6 @@ class Parser:
         self.current_token = self.lexer.get_next_token()  
     
     def consume(self, expected_token_type):
-        """
-        Kontrolná metóda - kontroluje, či aktuálny token je očakávaného typu.
-        Ak áno, posunie sa na ďalší token. Ak nie, vyhodí chybu.
-        """
         if self.current_token.type == expected_token_type:
             self.current_token = self.lexer.get_next_token()  
         else:
@@ -128,6 +124,5 @@ def visualize_tree(parsed_tree):
     else:
         build_tree(parsed_tree, parent=root)
 
-    print("\n📌 Дерево вывода:")
     for pre, _, node in RenderTree(root):
         print(f"{pre}{node.name}")

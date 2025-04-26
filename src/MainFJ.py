@@ -1,16 +1,18 @@
 from LexerFJ import Lexer
 from ParserFJ import Parser, visualize_tree
+from NkaFJ import regex_to_nka
 
+if __name__ == "__main__":
+    print("Enter regular (enter 'quit' for exit):")
+    running = True 
 
-def main():
-    print("Введите регулярное выражение (или напишите 'quit' для выхода):")
-
-    while True:
+    while running:
         input_text = input("> ")
 
         if input_text.lower() == "quit":
-            print("Выход из программы.")
-            break
+            print("!...Exiting...!")
+            running = False  
+            break  
 
         if input_text.strip() == "":
             continue
@@ -21,9 +23,22 @@ def main():
         try:
             parsed_tree = parser.Alternative()
             visualize_tree(parsed_tree)
+            nka = regex_to_nka(parsed_tree)
+
+            while True:
+                try:
+                    test_string = input("Enter string to test (or 'quit' to exit): ")
+                    if test_string.lower() == "quit":
+                        print("Exit.....")
+                        running = False  
+                        break 
+                    if nka.is_accepted(test_string):
+                        print(f"String '{test_string}' is ACCEPTED!")
+                    else:
+                        print(f"String '{test_string}' is NOT ACCEPTED!")
+                except KeyboardInterrupt:
+                    print("\n!...Exiting...!")
+                    running = False  
+                    break  
         except SyntaxError as e:
-            print(f"Ошибка: {e}")
-
-
-if __name__ == "__main__":
-    main()
+            print(f"Error: {e}")
