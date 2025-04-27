@@ -97,8 +97,16 @@ def build_nka(node, has_LCBRA=False):
             elif isinstance(symbol, tuple) and symbol[0] == "LBRCKT":  
                 print("Processing LBRCKT ( [] )")
                 inner_start, inner_accept = build_nka(symbol[1])
-                
-                return inner_start, inner_accept
+
+                start_state = State(is_accepting=True)
+                accept_state = State(is_accepting=True)
+
+                start_state.add_transition(None, inner_start)   
+                start_state.add_transition(None, accept_state)  
+                inner_accept.add_transition(None, accept_state)
+
+                print(f"Created LBRCKT group with ε-skipping: {start_state} -> {accept_state}")
+                return start_state, accept_state
             
             elif isinstance(symbol, tuple) and symbol[0] == "RBRCKT":  
                 print("Processing RCBRKT (close square bracket)")
@@ -155,7 +163,7 @@ def build_nka(node, has_LCBRA=False):
                     last_accept.add_transition(None, child_start)
                 last_accept = child_accept
                 
-            start_state.is_accepting = True
+            start_state.is_accepting = True    
             last_accept.is_accepting = True
 
             if has_LCBRA:
@@ -164,8 +172,6 @@ def build_nka(node, has_LCBRA=False):
 
             print(f"Created sequence starting at {start_state}")
             return start_state, last_accept    
-    else:
-        raise TypeError(f"Ожидался кортеж, но найден: {type(node)}")
 
 def regex_to_nka(parsed_tree):
     start_state, accept_state = build_nka(parsed_tree)
