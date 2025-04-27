@@ -32,6 +32,9 @@ if __name__ == "__main__":
                         print("Exit.....")
                         running = False  
                         break 
+                    if " " in test_string:
+                        print("Error: The string contains spaces. Please enter a valid string without spaces.")
+                        continue
                     if nka.is_accepted(test_string):
                         print(f"String '{test_string}' is ACCEPTED!")
                     else:

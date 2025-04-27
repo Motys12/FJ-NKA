@@ -59,76 +59,111 @@ class NKA:
 
             if not next_states:
                 print("No states to process for next character!")
-                return False  # Dead end, not accepted
-
+                return False  
 
             return dfs(next_states, pos + 1)
 
         return dfs([self.start_state], 0)
 
-def build_nka(node):
+def build_nka(node, has_LCBRA=False):
     if isinstance(node, tuple):
+        # print(f"Processing node: {node[0]}")
         if node[0] == "element":
             symbol = node[1]
             if isinstance(symbol, tuple) and symbol[0] == "SYMBOL":
+                # print(f"Processing SYMBOL: {symbol[1]}")
                 start_state = State(is_accepting=False)
                 accept_state = State(is_accepting=False)
                 start_state.add_transition(symbol[1], accept_state)
                 print(f"Created transition {symbol[1]}: {start_state} -> {accept_state}")
+                
                 return start_state, accept_state
+            
+            elif isinstance(symbol, tuple) and symbol[0] == "LCBRA": 
+                print("Processing LCBRA")
+                has_LCBRA=True
+                inner_start, inner_accept = build_nka(symbol[1], has_LCBRA) 
+                if inner_start is None or inner_accept is None:
+                    raise ValueError("Error: start or accept state is None inside parentheses.") 
+
+                print(f"Created group with existing states: {inner_start} -> {inner_accept}")
+                return inner_start, inner_accept
+    
+            elif isinstance(symbol, tuple) and symbol[0] == "RCBRA":  
+                print("Processing RCBRA (close bracket)")
+                has_LCBRA=False;
+                return None, None
+            
+            elif isinstance(symbol, tuple) and symbol[0] == "LBRCKT":  
+                print("Processing LBRCKT ( [] )")
+                inner_start, inner_accept = build_nka(symbol[1])
+                
+                return inner_start, inner_accept
+            
+            elif isinstance(symbol, tuple) and symbol[0] == "RBRCKT":  
+                print("Processing RCBRKT (close square bracket)")
+                return None, None
+            
             elif isinstance(symbol, tuple) and symbol[0] in {"regular", "LCBRA", "RCBRA"}:
-                return build_nka(symbol[1])
+                return build_nka(symbol[1], has_LCBRA)
             else:
                 raise TypeError(f"Неожиданный тип в элементе: {symbol[0]}")
+
         
         elif node[0] == "regular":
-            return build_nka(node[1])
+            # print(f"Processing regular expression: {node[1]}")
+            return build_nka(node[1], has_LCBRA)
         
-        elif isinstance(node, tuple) and node[0] == "LCBRA":
-            inner = node[1]  
-            if inner[0] in {"alternative", "sequence"}:
-                inner_start, inner_accept = build_nka(inner)
-
-                start_state = State()
-                accept_state = State(is_accepting=True)
-
-                start_state.add_transition(None, inner_start)
-                inner_accept.add_transition(None, inner_start) 
-                inner_accept.add_transition(None, accept_state)
-
-                return start_state, accept_state
-            else:
-                raise ValueError("Ожидался узел типа 'regular' после '{'")
         
         elif node[0] == "alternative":
+            # print(f"Processing alternative: {node[1]} | {node[2]}") 
+            
             left_start, left_accept = build_nka(node[1])
             right_start, right_accept = build_nka(node[2])
-            start_state = State()
+            
+            if has_LCBRA:
+                start_state = State()
+            else:
+                start_state = State(is_accepting=True)
             accept_state = State(is_accepting=True)
+
             start_state.add_transition(None, left_start)
             start_state.add_transition(None, right_start)
             left_accept.add_transition(None, accept_state)
             right_accept.add_transition(None, accept_state)
+            print(f"Created alternative start state: {start_state}")
+            print(f"Created alternative accept state: {accept_state}")
+            if has_LCBRA:
+                accept_state.add_transition(None, start_state)
+                print(f"Added ε-transition due to bracket: {accept_state} -> {start_state}")
+                
             print(f"Created alternative: {start_state} -> ({left_start}, {right_start})")
             return start_state, accept_state
        
         elif node[0] == "sequence":
+            # print(f"Processing sequence: {node[1]}")  
+            
             start_state = None
             last_accept = None
             for child in node[1]:
-                child_start, child_accept = build_nka(child)
+                # print(f"Processing child in sequence: {child}")
+                
+                child_start, child_accept = build_nka(child, has_LCBRA)
                 if start_state is None:
                     start_state = child_start
                 else:
                     last_accept.add_transition(None, child_start)
                 last_accept = child_accept
                 
+            start_state.is_accepting = True
             last_accept.is_accepting = True
+
+            if has_LCBRA:
+                print(f"Adding ε-transition from {last_accept} to {start_state}")
+                last_accept.add_transition(None, start_state)
+
             print(f"Created sequence starting at {start_state}")
-            return start_state, last_accept
-        
-        else:
-            raise TypeError(f"Неожиданный тип узла: {node[0]}")
+            return start_state, last_accept    
     else:
         raise TypeError(f"Ожидался кортеж, но найден: {type(node)}")
 

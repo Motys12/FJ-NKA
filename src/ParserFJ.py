@@ -63,7 +63,7 @@ class Parser:
             self.consume(TokenType.LBRACKET)
             expr = ("regular", self.Factor())
             self.consume(TokenType.RBRACKET)
-            return ("element", ("OPT", expr))
+            return ("element", ("LBRCKT", expr, "RBRCKT"))
 
         else:
             raise SyntaxError(f"Neočakávaný token: {token}")
@@ -96,10 +96,10 @@ def visualize_tree(parsed_tree):
                     Node("<LCBRA>", parent=new_node)
                     build_tree(content[1], new_node)
                     Node("<RCBRA>", parent=new_node)
-                elif isinstance(content, tuple) and content[0] == "OPT":
-                    Node("<LBRACKET>", parent=new_node)
+                elif isinstance(content, tuple) and content[0] == "LBRCKT":
+                    Node("<LBRCKT>", parent=new_node)
                     build_tree(content[1], new_node)
-                    Node("<RBRACKET>", parent=new_node)
+                    Node("<RBRCKT>", parent=new_node)
                 else:
                     build_tree(content, new_node)
             elif label == "regular": 
