@@ -163,6 +163,7 @@ def build_nka(node, has_LCBRA=False):
                     last_accept.add_transition(None, child_start)
                 last_accept = child_accept
                 
+
             start_state.is_accepting = True    
             last_accept.is_accepting = True
 

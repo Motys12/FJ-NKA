@@ -1,0 +1,10 @@
+\babel@toc {slovak}{}\relax 
+\contentsline {section}{\numberline {1}Formulácia zadania}{2}{section.1}%
+\contentsline {section}{\numberline {2}Vypracovanie zadania}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Opis architektúry riešenia}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Gramatika jazyka regulárnych výrazov}{2}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Podrobný postup implementácie}{2}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Ukážka vstupu a prezentácia výsledkov}{2}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Problémy a ich riešenie}{2}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Hodnotenie zadania}{2}{subsection.2.6}%
+\contentsline {section}{\numberline {3}Vyhodnotenie a záver}{2}{section.3}%

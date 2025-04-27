@@ -70,7 +70,6 @@ class Parser:
         
 def visualize_tree(parsed_tree):
     def has_pipe(node, depth=0):
-        indent = "  " * depth
         if isinstance(node, tuple):
             if node[0] == "alternative":
                 return True
@@ -83,8 +82,6 @@ def visualize_tree(parsed_tree):
                     return True
         return False
 
-    
-     
     def build_tree(node, parent=None):
         if isinstance(node, tuple):
             label = node[0]
