@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
             while True:
                 try:
-                    test_string = input("Enter string to test (or 'quit' to exit): ")
+                    test_string = input("Enter string to test acceptation(or 'quit' to exit): ")
                     if test_string.lower() == "quit":
                         print("Exit.....")
                         running = False  
