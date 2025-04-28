@@ -115,7 +115,6 @@ def build_nka(node, has_LCBRA=False):
             else:
                 raise TypeError(f"Unexpected type in element: {symbol[0]}")
 
-        
         elif node[0] == "regular":
             # print(f"Processing regular expression: {node[1]}")
             return build_nka(node[1], has_LCBRA)
@@ -128,9 +127,9 @@ def build_nka(node, has_LCBRA=False):
             right_start, right_accept = build_nka(node[2])
             
             if has_LCBRA:
-                start_state = State()
-            else:
                 start_state = State(is_accepting=True)
+            else:
+                start_state = State(is_accepting=False)
             accept_state = State(is_accepting=True)
 
             start_state.add_transition(None, left_start)
@@ -141,6 +140,7 @@ def build_nka(node, has_LCBRA=False):
             # print(f"Created alternative accept state: {accept_state}")
             if has_LCBRA:
                 accept_state.add_transition(None, start_state)
+                start_state.add_transition(None, accept_state)
                 # print(f"Added ε-transition due to bracket: {accept_state} -> {start_state}")
                 
             # print(f"Created alternative: {start_state} -> ({left_start}, {right_start})")
@@ -162,9 +162,10 @@ def build_nka(node, has_LCBRA=False):
                 last_accept = child_accept
                 
 
-            start_state.is_accepting = True    
+            start_state.is_accepting = False    
             last_accept.is_accepting = True
-
+            
+            
             if has_LCBRA:
                 # print(f"Adding ε-transition from {last_accept} to {start_state}")
                 last_accept.add_transition(None, start_state)
