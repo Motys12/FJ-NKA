@@ -1,0 +1,296 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[slovak]{babel}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{amsmath}
+\usepackage[utf8]{inputenc}
+
+% Nastavenie titulnej strany
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    \Large{\textbf{Technická univerzita v Košiciach}\\
+    Fakulta elektrotechniky a informatiky}\\
+    \vfill
+    \large{Formálne jazyky}\\
+    \large{Dokumentácia k obhajobe zadania}
+    \vfill
+    \begin{flushleft}
+        Dmytro Shkyl\\
+        Akademický rok: 2024/2025\\
+        Študijný program: informatika
+    \end{flushleft}
+\end{titlepage}
+
+\tableofcontents
+% Nastavenie formulacie zadania
+\newpage
+\section{Formulácia zadania}
+
+\indent\textbf{Téma:} Generátor konečnostavových automatov\\
+
+\noindent\textbf{Cieľ zadania:} Implementovať generátor nedeterministických konečnostavových automatov (NKA) na základe zadaného regulárneho výrazu. Pri implementácii je potrebné využiť metódu syntaktickej analýzy zhora nadol (rekurzívny zostup).
+
+\vspace{1em}
+\textbf{Požiadavky na vstup:}
+\begin{itemize}
+    \item Vstupom je reťazec znakov, ktorý reprezentuje regulárny výraz v štandardne využívanej notácii pre predmet Formálne jazyky.
+\end{itemize}
+
+\vspace{1em}
+\textbf{Výstup programu:}
+\begin{itemize}
+    \item Grafická reprezentácia odvodeného stromu pre zadaný regulárny výraz. 
+    \item Plne funkčná programová implementácia nedeterministického konečnostavového automatu zodpovedajúceho zadanému regulárnemu výrazu.
+\end{itemize}
+% Vypracovanie zadania
+\newpage
+\section{Vypracovanie zadania}
+
+\subsection{Opis architektúry riešenia}
+Architektúra je navrhnutá modulárne, aby bolo možné  jednotlivé časti programu samostatne testovať.
+Navrhnuté riešenie je rozdelené do štyroch hlavných modulov:
+
+\begin{itemize}
+    \item \textbf{Lexer} \\
+    Lexer zodpovedá za rozdelenie vstupného reťazca (regulárneho výrazu) na tokeny. Spracováva jednotlivé symboly.
+    \item \textbf{Parser} \\
+    Parser prijíma tokeny z lexera a pomocou metódy rekurzívneho zostupu vytvára syntaktický strom, ktorý reprezentuje štruktúru regulárneho výrazu.
+
+    \item \textbf{Generátor NKA} \\
+    Tento modul vytvára nedeterministický konečnostavový automat (NKA) na základe syntaktického stromu. Každá operácia regulárneho výrazu má definované pravidlá.
+
+    \item \textbf{Main} \\
+    Modul \texttt{main} zabezpečuje spustenie programu, načítanie vstupného výrazu, inicializáciu lexera, parsera a generátora NKA. Tiež môže zobrazovať grafickú reprezentáciu odvodeného stromu.
+\end{itemize}
+
+\bigskip
+
+
+
+\subsection{Gramatika jazyka regulárnych výrazov}
+
+Gramatika pre regulárne výrazy môže byť definovaná ako:
+
+\begin{itemize}
+    \item \textbf{Symboly:} 
+    \begin{equation*}
+        R \rightarrow a \mid b \mid c \mid \dots \quad (\text{symbole ako } a, b, c, \dots)
+    \end{equation*}
+    \item \textbf{Postupnost':} 
+    \begin{equation*}
+        R \rightarrow R R \quad (\text{sekvencia dvoch symbolov})
+    \end{equation*}
+    \item \textbf{Alternatíva:} 
+    \begin{equation*}
+        R \rightarrow R \mid R \quad 
+    \end{equation*}
+    \item \textbf{Pozitívny uzáver:} 
+    \begin{equation*}
+        R \rightarrow R\{R\} \quad (\text{jeden alebo viac opakovaní}) 
+    \end{equation*}
+    \item \textbf{Tranzitívny uzáver:} 
+    \begin{equation*}
+        R \rightarrow \{R\} \quad (\text{opakovanie nula alebo viackrát}) 
+    \end{equation*}
+    \item \textbf{Voliteľnosť:}
+    \begin{equation*}
+        R \rightarrow [R] \quad (\text{nula alebo jedenkrát})
+    \end{equation*}
+\end{itemize}
+
+\subsection{Podrobný postup implementácie}
+1. \textbf{Lexikálny analyzátor (Lexer)}
+
+Lexikálny analyzátor je zodpovedný za rozdelenie vstupného reťazca na jednotlivé tokeny, ktoré sú základom pre ďalší syntaktický rozbor. Implementácia lexikálneho analyzátora zahŕňa:
+
+\begin{itemize}
+    \item \textbf{Inicjalizácia}: Lexer sa inicializuje s reťazcom, ktorý sa má analyzovať. Určuje sa počiatočná pozícia na začiatok reťazca.
+    \item \textbf{Metóda \texttt{advance()}}: Posúva aktuálnu pozíciu o jeden znak v reťazci a aktualizuje aktuálny znak. Ak sa pozícia dostane za koniec reťazca, nastaví sa aktuálny znak na \texttt{None}.
+    \item \textbf{Metóda \texttt{skip\_whitespace()}}: Preskakuje všetky medzery a nové riadky, aby analyzátor mohol pokračovať v spracovaní tokenov.
+    \item \textbf{Metóda \texttt{get\_next\_token()}}: Hlavná metóda lexikálneho analyzátora, ktorá prechádza vstupný reťazec a vracia nasledujúci token podľa rozpoznaných symbolov.
+\end{itemize}
+
+Výsledkom lexikálneho analyzátora sú tokeny, ako napríklad symboly (písmená), operátory, skratky pre zátvorky a iné špeciálne znaky.
+
+2. \textbf{Syntaktický analyzátor (Parser)}
+
+Syntaktický analyzátor spracováva sekvenciu tokenov v syntaktické stromy, ktoré reprezentujú štruktúru pravidiel pre dané regulárne výrazy. Implementácia je založená na algoritme rekursívneho spúšťania, ktorý sa skladá z niekoľkých metód pre analýzu rôznych častí regulárnych výrazov.
+
+\begin{itemize}
+     \item \textbf{Metóda \texttt{Alternative()}}: Táto metóda analyzuje alternatívy (výrazy spojené operátorom \texttt{|}), ale ak sa v rámci regulárneho výrazu nenájde operátor \texttt{|}, vráti sekvenciu. Rekurzívne volá metódu \texttt{Sequence()} na analyzovanie jednotlivých alternatív. Ak sa zistí \texttt{|}, vytvorí sa nový uzol v strome pre alternatívu.
+    \item \textbf{Metóda \texttt{Sequence()}}: Analyzuje sekvencie, kde výrazy musia byť spracované v presnom poradí. Umožňuje kombinovať viaceré faktory do sekvencie.
+    \item \textbf{Metóda \texttt{Factor()}}: Analyzuje jednotlivé faktory, ako sú symboly, zátvorky. Na základe tokenu rozhodne, ako tento token spracovať.
+\end{itemize}
+
+Pri spracovaní regulárnych výrazov sa používajú rôzne typy uzlov, ktoré reprezentujú elementy regulárnych výrazov. Tieto uzly sú:
+\begin{itemize}
+    \item \textbf{regular}: reprezentuje regulárny výraz.
+    \item \textbf{element}: reprezentuje symboly.
+    \item \textbf{alternative}: reprezentuje alternatívu (výrazy oddelené operátorom \texttt{|}).
+    \item \textbf{sequence}: reprezentuje sekvenciu (výrazy vykonané v poradí).
+    \item \textbf{LCBRA a RCBRA}:  reprezentuje opakovanie (výraz v uzavretych zátvorkách \texttt{\{\}}).
+    \item \textbf{LBRCKT a RBRCKT}: reprezentuje volitelnost' (výraz v hranatých zátvorkách \texttt{[]}).
+\end{itemize}
+
+3. \textbf{Vytváranie a vizualizácia stromu}
+
+Na vizualizáciu syntaktického stromu sa použila knižnica \texttt{anytree}. Vizualizácia umožňuje zobrazovať štruktúru regulárneho výrazu v podobe stromu s uzlami reprezentujúcimi jednotlivé časti výrazu. Tento proces zahŕňa:
+
+\begin{itemize}
+    \item \textbf{Metóda \texttt{has\_pipe()}}: Prechádza strom a zisťuje, či existuje operátor \texttt{|}. To je dôležité pre správne vykreslenie alternatívnych výrazu.
+    \item \textbf{Metóda \texttt{build\_tree()}}: Rekurzívne konštruuje strom, pričom pre každý uzol vyhodnocuje jeho typ a pridáva príslušné deti do stromu.
+\end{itemize}
+
+V prípade, že strom obsahuje operátor \texttt{|}, vytvorí sa nový uzol typu \texttt{alternative}, ktorý je potom napojený na ďalšie uzly.
+
+
+\subsection{Ukážka vstupu a prezentácia výsledkov}
+Pre spracovanie regulárnych výrazov sa používa rôzne výrazy, ktoré sú spracované na syntaktické stromy. Príklad vstupu:
+
+\newpage
+\begin{itemize}
+    \item \texttt{\{ab|c\}}: Tento regulárny výraz sa používa na opakovanie reťazcov, ktoré začínajú písmenom \texttt{a}, následne obsahujú \texttt{b} alebo \texttt{c}. Prazdny retazec tiez bude akceptovany.
+\end{itemize}
+
+\begin{verbatim}
+regular
+- alternative
+    - sequence
+        - element
+            - <LCBRA>
+            - regular
+                - alternative
+                    - sequence
+                        - element
+                            - SYMBOL
+                                - a
+                        - element
+                            - SYMBOL
+                                - b
+                    - PIPE
+                    - sequence
+                        - element
+                            - SYMBOL
+                                - c
+            - <RCBRA>
+    \end{verbatim}
+
+Pre spracovanie regulárneho výrazu \texttt{\{ab|c\}} môžeme generovať konečný automat (NKA), ktorý akceptuje nasledovné reťazce:
+
+\begin{enumerate}
+    \item \texttt{ab}: Akceptované
+    \item \texttt{c}: Akceptované
+    \item \texttt{a}: Neakceptované
+    \item \texttt{abc}: Akceptované
+    \item \texttt{} (prázdny reťazec): Akceptované
+\end{enumerate}
+
+\newpage
+\begin{itemize}
+    \item \texttt{[a][b][c]}: Tento regulárny výraz znamená, že každe pismeno môže prist' nula alebo jeden krat. Prazdny retazec tiez bude akceptovany.
+\end{itemize}
+
+\begin{verbatim}
+  regular
+     - sequence
+     | - element
+     |        - <LCBRCKT>
+     |        - regular
+     |             - element
+     |                   - SYMBOL
+     |                        - a
+     |        - <RCBRCKT>
+     |  - element
+     |        - <LCBRCKT>
+     |        - regular
+     |             - element
+     |                   - SYMBOL
+     |                        - b
+     |        - <RCBRCKT>
+     |	- element
+     |        - <LCBRCKT>
+     |        - regular
+     |             - element
+     |                   - SYMBOL
+     |                        - c
+     |       - <RCBRCKT>
+    \end{verbatim}
+
+Pre spracovanie regulárneho výrazu \texttt{[a][b][c]} môžeme generovať konečný automat (NKA), ktorý akceptuje nasledovné reťazce:
+
+\begin{enumerate}
+    \item \texttt{ab}: Akceptované
+    \item \texttt{c}: Akceptované
+    \item \texttt{abc}: Akceptované
+    \item \texttt{ca}: Neakceptované
+   \item \texttt{bac}: Neakceptované
+    \item \texttt{} (prázdny reťazec): Akceptované
+\end{enumerate}
+
+
+
+
+\newpage
+\begin{itemize}
+    \item \texttt{abcdef}: Tento regulárny výraz znamená, že symboly musia prichadzat´ postupne. Prazdny retazec nebude akceptovany.
+\end{itemize}
+
+\begin{verbatim}
+ regular
+   - sequence
+   | -element
+   |     -SYMBOL
+   |         - a
+   | -element
+   |     -SYMBOL
+   |         - b
+   | -element
+   |     -SYMBOL
+   |         - c
+   | -element
+   |     -SYMBOL
+   |         - d
+   | -element
+   |     -SYMBOL
+   |         - e
+   | -element
+   |     -SYMBOL
+   |         - f
+
+   
+    \end{verbatim}
+
+Pre spracovanie regulárneho výrazu \texttt{abcdef} môžeme generovať konečný automat (NKA), ktorý akceptuje nasledovné reťazce:
+
+\begin{enumerate}
+    \item \texttt{ab}: Neakceptované
+    \item \texttt{c}: Neakceptované
+    \item \texttt{a}: Neakceptované
+    \item \texttt{abcdef}: Akceptované
+    \item \texttt{} (prázdny reťazec): Neakceptované
+\end{enumerate}
+
+\subsection{Problémy a ich riešenie}
+Počas implementácie som sa stretol s problémom, že pri použití zátvoriek (\{\}), ktoré označujú opakovanie, sa môj vstup neopakoval a slovo nebolo akceptované správne. 
+
+Aby som tento problém vyriešil, vytvoril som boolean premennú has\_LCBRA, ktorá označuje, že v aktuálnom výraze sa nachádza ľavá zátvorka. Táto premenná umožňuje rozpoznať, kedy sa nachádzame vnútri zátvoriek, a preto sme po jej identifikovaní vygenerovali epsilonový prechod, ktorý umožnil "preskočiť" späť na štartovací stav. Týmto spôsobom sa zabezpečilo, že výraz s opakovaním fungoval správne a akceptoval slová, ktoré by sa inak nezrealizovali.
+
+\subsection{Hodnotenie zadania}
+
+V celkovom kontexte bolo zadanie veľmi zaujímavé, pretože si vyžiadalo podrobné porozumenie konceptu práce NKA. Aby sme správne implementovali generátor NKA na základe regulárnych výrazov, bolo potrebné dôkladne pochopiť, ako NKA funguje a ako môžeme využiť jeho vlastnosti na správne spracovanie rôznych komponentov regulárnych výrazov, ako sú sekvencie, alternatívy a opakovania.
+
+\section{Vyhodnotenie a záver}
+
+Počas implementácie sa mi podarilo správne vybudovať štruktúru stromu a implementovať základné komponenty regulérnych výrazov, ako sú sekvencie, alternatívy a opakovanie symbolov. 
+
+Okrem toho som implementoval správnu logiku pre spracovanie epsilonových prechodov v prípadoch s opakovaním, čo umožnilo správnu interpretáciu regulérnych výrazov s opakujúcimi sa vzormi.
+
+Aj keď úloha bola náročná, považujem ju za veľmi poučnú, pretože poskytla príležitosť na hlbšie pochopenie koncepcie regulérnych výrazov a ich implementácie v podobe NKA.
+
+\end{document}
